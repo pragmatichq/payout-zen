@@ -26,7 +26,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->spa()
-            ->path('admin')
+            ->path('/')
             ->login()
             ->domain(config('app.admin_domain'))
             ->colors([
