@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->spa()
             ->path('admin')
             ->login()
-            ->domain('admin.payoutzen.com')
+            ->domain(config('app.admin_domain'))
             ->colors([
                 'primary' => Color::Green,
             ])
