@@ -5,6 +5,7 @@ use App\Events\AccountRemoved;
 use App\Events\SessionLogged;
 use App\Events\SessionRemoved;
 use App\States\UserState;
+use Carbon\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
@@ -24,6 +25,7 @@ new class extends Component {
     {
         AccountCreated::fire([
             'user_id' => 1,
+            'firm_id' => 1,
         ]);
     }
 
@@ -32,7 +34,8 @@ new class extends Component {
         SessionLogged::fire([
             'account_id' => (int)$account_id,
             'user_id' => 1,
-            'pnl' => rand(-500, 500)
+            'date' => Carbon::now(),
+            'pnl' => rand(-500, 500),
         ]);
     }
 
