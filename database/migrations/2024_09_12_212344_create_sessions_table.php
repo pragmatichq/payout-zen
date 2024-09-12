@@ -13,7 +13,7 @@ return new class extends Migration {
     {
         Schema::create('trading_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId(Account::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Account::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
