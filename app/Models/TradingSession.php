@@ -5,10 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Session extends Model
+class TradingSession extends Model
 {
-    protected $table = 'trading_sessions';
-
     protected $guarded = [];
 
     public function account(): BelongsTo

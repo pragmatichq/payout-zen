@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\AccountFormatTypeEnum;
 use App\Filament\Resources\AccountFormatResource\Pages;
 use App\Filament\Resources\AccountFormatResource\RelationManagers;
 use App\Models\AccountFormat;
@@ -10,8 +11,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AccountFormatResource extends Resource
 {
@@ -28,7 +27,8 @@ class AccountFormatResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required(),
-                Forms\Components\TextInput::make('type')
+                Forms\Components\Select::make('type')
+                    ->options(AccountFormatTypeEnum::class)
                     ->required(),
                 Forms\Components\TextInput::make('starting_balance')
                     ->required()

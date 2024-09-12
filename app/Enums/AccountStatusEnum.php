@@ -14,7 +14,7 @@ enum AccountStatusEnum: string implements HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Active => 'Evaluation',
+            self::Active => 'Active',
             self::Failed => 'Funded',
             self::Passed => 'Live',
             self::Reset => 'Reset',

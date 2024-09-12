@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Platform extends Model
 {
+    protected $guarded = [];
+
     public function firms(): BelongsToMany
     {
         return $this->belongsToMany(Firm::class);

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Firm extends Model
 {
+    protected $guarded = [];
+
     public function account_formats(): HasMany
     {
         return $this->hasMany(AccountFormat::class);

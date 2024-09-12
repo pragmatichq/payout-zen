@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
+    protected $guarded = [];
+
     public function platform(): BelongsTo
     {
         return $this->belongsTo(Platform::class);

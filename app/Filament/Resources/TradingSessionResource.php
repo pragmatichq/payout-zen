@@ -2,20 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SessionResource\Pages;
-use App\Filament\Resources\SessionResource\RelationManagers;
-use App\Models\Session;
+use App\Filament\Resources\TradingSessionResource\Pages;
+use App\Filament\Resources\TradingSessionResource\RelationManagers;
+use App\Models\TradingSession;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SessionResource extends Resource
+class TradingSessionResource extends Resource
 {
-    protected static ?string $model = Session::class;
+    protected static ?string $model = TradingSession::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -23,7 +21,10 @@ class SessionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('App\Models\Account')
+                Forms\Components\Select::make('account_id')
+                    ->relationship('account', 'nickname')
+                    ->required(),
+                Forms\Components\TextInput::make('pnl')
                     ->required()
                     ->numeric(),
             ]);
@@ -33,7 +34,10 @@ class SessionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('App\Models\Account')
+                Tables\Columns\TextColumn::make('account.nickname')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('pnl')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -68,9 +72,9 @@ class SessionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSessions::route('/'),
-            'create' => Pages\CreateSession::route('/create'),
-            'edit' => Pages\EditSession::route('/{record}/edit'),
+            'index' => Pages\ListTradingSessions::route('/'),
+            'create' => Pages\CreateTradingSession::route('/create'),
+            'edit' => Pages\EditTradingSession::route('/{record}/edit'),
         ];
     }
 }
