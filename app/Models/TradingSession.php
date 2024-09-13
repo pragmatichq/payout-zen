@@ -13,4 +13,23 @@ class TradingSession extends Model
     {
         return $this->belongsTo(Account::class);
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saved(function (TradingSession $session) {
+            $account = $session->account;
+            $account->updateStatistics();
+        });
+
+        static::deleted(function (TradingSession $session) {
+            $account = $session->account;
+            $account->updateStatistics();
+        });
+    }
+
+    protected $casts = [
+        'date' => 'date',
+    ];
 }

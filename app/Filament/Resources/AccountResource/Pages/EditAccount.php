@@ -16,4 +16,11 @@ class EditAccount extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AccountResource\Widgets\AccountBalanceOverTimeChart::class
+        ];
+    }
 }

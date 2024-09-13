@@ -6,11 +6,18 @@ use App\Enums\AccountStatusEnum;
 use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
 use App\Models\Account;
-use Filament\Forms;
+use App\Models\AccountFormat;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
+use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
+use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 
 class AccountResource extends Resource
 {
@@ -22,33 +29,35 @@ class AccountResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('user_id')
+                Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required(),
-                Forms\Components\Select::make('firm_id')
+                Select::make('firm_id')
                     ->relationship('firm', 'name')
+                    ->live()
                     ->required(),
-                Forms\Components\Select::make('account_format_id')
+                Select::make('account_format_id')
                     ->relationship('account_format', 'name')
+                    ->options(fn(Get $get): Collection => AccountFormat::query()
+                        ->where('firm_id', $get('firm_id'))
+                        ->pluck('name', 'id'))
                     ->required(),
-                Forms\Components\Select::make('platform_id')
+                Select::make('platform_id')
                     ->relationship('platform', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('nickname')
+                TextInput::make('nickname')
                     ->required(),
-                Forms\Components\Select::make('status')
+                Select::make('status')
                     ->options(AccountStatusEnum::class)
                     ->required(),
-                Forms\Components\TextInput::make('pnl')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\TextInput::make('starting_balance')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('current_balance')
-                    ->required()
-                    ->numeric(),
+                Group::make()->relationship('account_format')->schema([
+                    MoneyInput::make('starting_balance')
+                        ->disabled(),
+                ]),
+                MoneyInput::make('current_balance')
+                    ->disabled(),
+                MoneyInput::make('pnl')
+                    ->disabled(),
             ]);
     }
 
@@ -72,14 +81,11 @@ class AccountResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pnl')
-                    ->numeric()
+                MoneyColumn::make('pnl')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('starting_balance')
-                    ->numeric()
+                MoneyColumn::make('account_format.starting_balance')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('current_balance')
-                    ->numeric()
+                MoneyColumn::make('current_balance')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -106,7 +112,7 @@ class AccountResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TradingSessionsRelationManager::class,
         ];
     }
 

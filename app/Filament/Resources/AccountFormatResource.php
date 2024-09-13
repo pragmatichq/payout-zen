@@ -3,14 +3,23 @@
 namespace App\Filament\Resources;
 
 use App\Enums\AccountFormatTypeEnum;
-use App\Filament\Resources\AccountFormatResource\Pages;
+use App\Filament\Resources\AccountFormatResource\Pages\CreateAccountFormat;
+use App\Filament\Resources\AccountFormatResource\Pages\EditAccountFormat;
+use App\Filament\Resources\AccountFormatResource\Pages\ListAccountFormats;
 use App\Filament\Resources\AccountFormatResource\RelationManagers;
 use App\Models\AccountFormat;
-use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
+use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
+use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 
 class AccountFormatResource extends Resource
 {
@@ -22,17 +31,16 @@ class AccountFormatResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('firm_id')
+                Select::make('firm_id')
                     ->relationship('firm', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required(),
-                Forms\Components\Select::make('type')
+                Select::make('type')
                     ->options(AccountFormatTypeEnum::class)
                     ->required(),
-                Forms\Components\TextInput::make('starting_balance')
+                MoneyInput::make('starting_balance')
                     ->required()
-                    ->numeric()
                     ->default(0),
             ]);
     }
@@ -41,34 +49,38 @@ class AccountFormatResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('firm.name')
+                TextColumn::make('firm.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('starting_balance')
-                    ->numeric()
+                MoneyColumn::make('starting_balance')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->defaultGroup('firm.name')
+            ->groups([
+                Group::make('firm.name')
+                    ->collapsible(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -83,9 +95,9 @@ class AccountFormatResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListAccountFormats::route('/'),
-            'create' => Pages\CreateAccountFormat::route('/create'),
-            'edit' => Pages\EditAccountFormat::route('/{record}/edit'),
+            'index' => ListAccountFormats::route('/'),
+            'create' => CreateAccountFormat::route('/create'),
+            'edit' => EditAccountFormat::route('/{record}/edit'),
         ];
     }
 }
