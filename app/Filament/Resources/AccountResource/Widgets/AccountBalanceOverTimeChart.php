@@ -13,6 +13,7 @@ class AccountBalanceOverTimeChart extends ChartWidget
     public Account $record;
 
     public $balance_over_time;
+    public $starting_balance;
 
     protected function getData(): array
     {
@@ -36,6 +37,7 @@ class AccountBalanceOverTimeChart extends ChartWidget
 
     protected function getOptions(): RawJs
     {
+        $this->starting_balance = $this->record->account_format->starting_balance / 102;
         return RawJs::make(/** @lang text */ <<<JS
         {
             plugins: {
@@ -57,6 +59,7 @@ class AccountBalanceOverTimeChart extends ChartWidget
             },
             scales: {
                 y: {
+                suggestedMin: $this->starting_balance,
                     ticks: {
                         callback: function(value) {
                         // Format the value with commas and currency symbol

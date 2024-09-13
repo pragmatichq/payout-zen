@@ -28,6 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->spa()
             ->path('/')
             ->login()
+            ->brandName('Payout Zen')
             ->domain(config('app.admin_domain'))
             ->colors([
                 'primary' => Color::Green,

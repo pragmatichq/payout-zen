@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AccountResource\Pages;
 
 use App\Filament\Resources\AccountResource;
+use App\Filament\Resources\AccountResource\Widgets\AccountBalanceOverTimeChart;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -20,7 +21,12 @@ class EditAccount extends EditRecord
     protected function getHeaderWidgets(): array
     {
         return [
-            AccountResource\Widgets\AccountBalanceOverTimeChart::class
+            AccountBalanceOverTimeChart::class
         ];
+    }
+
+    public function getHeaderWidgetsColumns(): int|array
+    {
+        return 2;
     }
 }

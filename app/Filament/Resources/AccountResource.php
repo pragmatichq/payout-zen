@@ -7,7 +7,6 @@ use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
 use App\Models\Account;
 use App\Models\AccountFormat;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -24,6 +23,8 @@ class AccountResource extends Resource
     protected static ?string $model = Account::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $navigationGroup = 'User Data';
 
     public static function form(Form $form): Form
     {
@@ -50,10 +51,6 @@ class AccountResource extends Resource
                 Select::make('status')
                     ->options(AccountStatusEnum::class)
                     ->required(),
-                Group::make()->relationship('account_format')->schema([
-                    MoneyInput::make('starting_balance')
-                        ->disabled(),
-                ]),
                 MoneyInput::make('current_balance')
                     ->disabled(),
                 MoneyInput::make('pnl')
@@ -82,8 +79,6 @@ class AccountResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->searchable(),
                 MoneyColumn::make('pnl')
-                    ->sortable(),
-                MoneyColumn::make('account_format.starting_balance')
                     ->sortable(),
                 MoneyColumn::make('current_balance')
                     ->sortable(),
