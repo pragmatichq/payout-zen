@@ -3,7 +3,6 @@
 use App\Enums\AccountStatusEnum;
 use App\Models\AccountFormat;
 use App\Models\Firm;
-use App\Models\Platform;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Auth\User;
@@ -20,7 +19,6 @@ return new class extends Migration {
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Firm::class)->constrained();
             $table->foreignIdFor(AccountFormat::class)->constrained();
-            $table->foreignIdFor(Platform::class)->constrained();
             $table->string('nickname');
             $table->enum('status', AccountStatusEnum::values())->default(AccountStatusEnum::Active);
             $table->bigInteger('pnl')->default(0);

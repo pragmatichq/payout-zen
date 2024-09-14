@@ -2,9 +2,10 @@
 
 namespace App\Enums;
 
+use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum AccountStatusEnum: string implements HasLabel
+enum AccountStatusEnum: string implements HasLabel, HasColor
 {
     case Active = 'active';
     case Failed = 'failed';
@@ -15,9 +16,19 @@ enum AccountStatusEnum: string implements HasLabel
     {
         return match ($this) {
             self::Active => 'Active',
-            self::Failed => 'Funded',
-            self::Passed => 'Live',
+            self::Failed => 'Failed',
+            self::Passed => 'Passed',
             self::Reset => 'Reset',
+        };
+    }
+
+    public function getColor(): string|array|null
+    {
+        return match ($this) {
+            self::Active => 'info',
+            self::Failed => 'danger',
+            self::Passed => 'success',
+            self::Reset => 'gray',
         };
     }
 

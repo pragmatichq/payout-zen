@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\AccountFormat;
+use App\Models\Firm;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -15,5 +17,13 @@ class DatabaseSeeder extends Seeder
             'name' => 'Kyle Morck',
             'email' => 'kyle@payoutzen.com',
         ]);
+        AccountFormat::factory()
+            ->count(3)
+            ->for(Firm::factory())
+            ->create();
+        AccountFormat::factory()
+            ->count(3)
+            ->for(Firm::factory())
+            ->create();
     }
 }

@@ -11,9 +11,56 @@ class Account extends Model
 {
     protected $guarded = [];
 
-    public function platform(): BelongsTo
+    protected static function boot(): void
     {
-        return $this->belongsTo(Platform::class);
+        parent::boot();
+
+        static::saved(function (Account $account) {
+            $user = $account->user;
+            $account->updateStatistics(false);
+            $user->updateActivePnl();
+        });
+
+        static::deleted(function (Account $account) {
+            $user = $account->user;
+            $account->updateStatistics(false);
+            $user->updateActivePnl();
+        });
+    }
+
+    public function updateStatistics(bool $save = true): void
+    {
+        $sessions = $this->trading_sessions()->get();
+        $pnl = $sessions->sum('pnl');
+        $starting_balance = $this->account_format->starting_balance;
+        $starting_balance_in_dollars = ($starting_balance / 100);
+        $balance_over_time = $this->calculateBalanceOverTime($sessions, $starting_balance_in_dollars);
+
+        $this->balance_over_time = $balance_over_time;
+        $this->pnl = $pnl;
+        $this->current_balance = $pnl + $starting_balance;
+
+        if ($save) {
+            $this->save();
+        }
+    }
+
+    private function calculateBalanceOverTime($sessions, $starting_balance_in_dollars): array
+    {
+        $cumulativeBalance = $starting_balance_in_dollars;
+        $dates = [];
+        $values = [];
+
+        foreach ($sessions as $session) {
+            $cumulativeBalance += ($session->pnl / 100);
+            $dates[] = $session->date->toDateString();
+            $values[] = $cumulativeBalance;
+        }
+
+        return [
+            'dates' => $dates,
+            'values' => $values,
+        ];
     }
 
     public function firm(): BelongsTo
@@ -33,36 +80,7 @@ class Account extends Model
 
     public function trading_sessions(): HasMany
     {
-        return $this->hasMany(TradingSession::class);
-    }
-
-    public function updateStatistics(): void
-    {
-        // Get all sessions for the account, ordered by date
-        $sessions = $this->trading_sessions()->orderBy('date')->get();
-
-        $pnl = 0;
-        $dates = [];
-        $values = [];
-        $cumulativeBalance = $this->account_format->starting_balance / 100;
-
-        foreach ($sessions as $session) {
-            $pnl += $session->pnl;
-            $cumulativeBalance += $session->pnl / 100;
-            $dates[] = $session->date->toDateString();
-            $values[] = $cumulativeBalance;
-        }
-
-        $balanceOverTime = [
-            'dates' => $dates,
-            'values' => $values
-        ];
-
-        $this->balance_over_time = $balanceOverTime;
-        $this->pnl = $pnl;
-        $this->current_balance = $pnl + $this->account_format->starting_balance;
-
-        $this->save();
+        return $this->hasMany(TradingSession::class)->orderBy('date');
     }
 
     protected function casts(): array

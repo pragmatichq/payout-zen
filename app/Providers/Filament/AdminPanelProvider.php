@@ -25,6 +25,10 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+            ->navigationGroups([
+                'User Data',
+                'Firm Data',
+            ])
             ->spa()
             ->path('/')
             ->login()

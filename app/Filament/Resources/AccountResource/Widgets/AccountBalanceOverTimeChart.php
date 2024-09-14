@@ -18,6 +18,7 @@ class AccountBalanceOverTimeChart extends ChartWidget
     protected function getData(): array
     {
         $this->balance_over_time = $this->record->balance_over_time;
+        if (!$this->balance_over_time) return [];
         return [
             'datasets' => [
                 [

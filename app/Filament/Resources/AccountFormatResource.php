@@ -51,22 +51,15 @@ class AccountFormatResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('firm.name')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('type')
-                    ->searchable(),
-                MoneyColumn::make('starting_balance')
-                    ->sortable(),
+                TextColumn::make('firm.name'),
+                TextColumn::make('name'),
+                TextColumn::make('type'),
+                MoneyColumn::make('starting_balance'),
                 TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultGroup('firm.name')

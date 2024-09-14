@@ -13,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
@@ -43,9 +44,6 @@ class AccountResource extends Resource
                         ->where('firm_id', $get('firm_id'))
                         ->pluck('name', 'id'))
                     ->required(),
-                Select::make('platform_id')
-                    ->relationship('platform', 'name')
-                    ->required(),
                 TextInput::make('nickname')
                     ->required(),
                 Select::make('status')
@@ -62,33 +60,22 @@ class AccountResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('firm.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('account_format.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('platform.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('nickname')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->searchable(),
-                MoneyColumn::make('pnl')
-                    ->sortable(),
-                MoneyColumn::make('current_balance')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('user.name'),
+                TextColumn::make('firm.name'),
+                TextColumn::make('account_format.name'),
+                TextColumn::make('account_format.type')
+                    ->label('Account type')
+                    ->badge(),
+                TextColumn::make('nickname'),
+                TextColumn::make('status')
+                    ->badge(),
+                MoneyColumn::make('pnl'),
+                MoneyColumn::make('current_balance'),
+                TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

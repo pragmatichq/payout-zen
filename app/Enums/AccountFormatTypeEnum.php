@@ -2,9 +2,10 @@
 
 namespace App\Enums;
 
+use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum AccountFormatTypeEnum: string implements HasLabel
+enum AccountFormatTypeEnum: string implements HasLabel, HasColor
 {
     case Evaluation = 'evaluation';
     case Funded = 'funded';
@@ -16,6 +17,15 @@ enum AccountFormatTypeEnum: string implements HasLabel
             self::Evaluation => 'Evaluation',
             self::Funded => 'Funded',
             self::Live => 'Live',
+        };
+    }
+
+    public function getColor(): string|array|null
+    {
+        return match ($this) {
+            self::Evaluation => 'warning',
+            self::Funded => 'success',
+            self::Live => 'info',
         };
     }
 
