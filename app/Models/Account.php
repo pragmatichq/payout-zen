@@ -15,34 +15,43 @@ class Account extends Model
     {
         parent::boot();
 
-        static::saved(function (Account $account) {
+        static::creating(function (Account $account) {
+            $account->current_balance = $account->account_format->starting_balance;
+        });
+
+        static::saving(function (Account $account) {
             $user = $account->user;
-            $account->updateStatistics(false);
             $user->updateActivePnl();
         });
 
         static::deleted(function (Account $account) {
             $user = $account->user;
-            $account->updateStatistics(false);
             $user->updateActivePnl();
         });
     }
 
-    public function updateStatistics(bool $save = true): void
+    public function updateStatistics(): void
     {
         $sessions = $this->trading_sessions()->get();
         $pnl = $sessions->sum('pnl');
         $starting_balance = $this->account_format->starting_balance;
+        $profit_goal = $this->account_format->profit_goal;
         $starting_balance_in_dollars = ($starting_balance / 100);
         $balance_over_time = $this->calculateBalanceOverTime($sessions, $starting_balance_in_dollars);
 
         $this->balance_over_time = $balance_over_time;
         $this->pnl = $pnl;
+        if ($profit_goal > 0) {
+            $this->profit_goal_progress = max($pnl / $profit_goal * 100, 0);
+        }
+        if ($this->status === AccountStatusEnum::Passed && $this->profit_goal_progress < 100) {
+            $this->status = AccountStatusEnum::Active;
+        } elseif ($this->profit_goal_progress >= 100) {
+            $this->status = AccountStatusEnum::Passed;
+        }
         $this->current_balance = $pnl + $starting_balance;
 
-        if ($save) {
-            $this->save();
-        }
+        $this->save();
     }
 
     private function calculateBalanceOverTime($sessions, $starting_balance_in_dollars): array
@@ -80,7 +89,7 @@ class Account extends Model
 
     public function trading_sessions(): HasMany
     {
-        return $this->hasMany(TradingSession::class)->orderBy('date');
+        return $this->hasMany(TradingSession::class)->orderBy('date', 'desc');
     }
 
     protected function casts(): array

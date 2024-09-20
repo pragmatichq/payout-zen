@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 
@@ -18,7 +19,12 @@ class TradingSessionsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                DatePicker::make('date'),
+                DatePicker::make('date')
+                    ->native(false)
+                    ->unique(modifyRuleUsing: function (Unique $rule, $livewire) {
+                        return $rule->where('account_id', $livewire->ownerRecord->id); // Assuming account_id is in your form data
+                    })
+                    ->closeOnDateSelection(),
                 MoneyInput::make('pnl')
                     ->required(),
             ]);
@@ -38,11 +44,17 @@ class TradingSessionsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()->after(function ($action) {
+                    $action->getLivewire()->dispatch('refreshForm');
+                }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->after(function ($action) {
+                    $action->getLivewire()->dispatch('refreshForm');
+                }),
+                Tables\Actions\DeleteAction::make()->after(function ($action) {
+                    $action->getLivewire()->dispatch('refreshForm');
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

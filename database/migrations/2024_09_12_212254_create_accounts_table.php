@@ -21,9 +21,6 @@ return new class extends Migration {
             $table->foreignIdFor(AccountFormat::class)->constrained();
             $table->string('nickname');
             $table->enum('status', AccountStatusEnum::values())->default(AccountStatusEnum::Active);
-            $table->bigInteger('pnl')->default(0);
-            $table->bigInteger('current_balance')->default(0);
-            $table->json('balance_over_time')->nullable();
             $table->timestamps();
         });
     }

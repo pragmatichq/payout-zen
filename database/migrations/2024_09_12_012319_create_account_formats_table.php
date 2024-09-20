@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AccountDrawdownTypeEnum;
 use App\Enums\AccountFormatTypeEnum;
 use App\Models\Firm;
 use Illuminate\Database\Migrations\Migration;
@@ -17,7 +18,10 @@ return new class extends Migration {
             $table->foreignIdFor(Firm::class)->constrained();
             $table->string('name');
             $table->enum('type', AccountFormatTypeEnum::values())->default(AccountFormatTypeEnum::Evaluation->value);
+            $table->enum('drawdown_type', AccountDrawdownTypeEnum::values())->default(AccountDrawdownTypeEnum::EOD->value);
+            $table->bigInteger('drawdown_threshold')->nullable();
             $table->bigInteger('starting_balance')->default(0);
+            $table->bigInteger('profit_goal')->default(0);
             $table->timestamps();
         });
     }

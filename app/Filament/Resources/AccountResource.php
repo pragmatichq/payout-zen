@@ -7,8 +7,10 @@ use App\Filament\Resources\AccountResource\Pages;
 use App\Filament\Resources\AccountResource\RelationManagers;
 use App\Models\Account;
 use App\Models\AccountFormat;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
@@ -33,26 +35,36 @@ class AccountResource extends Resource
             ->schema([
                 Select::make('user_id')
                     ->relationship('user', 'name')
+                    ->hiddenOn('edit')
                     ->required(),
                 Select::make('firm_id')
                     ->relationship('firm', 'name')
+                    ->hiddenOn('edit')
                     ->live()
                     ->required(),
                 Select::make('account_format_id')
                     ->relationship('account_format', 'name')
+                    ->hiddenOn('edit')
                     ->options(fn(Get $get): Collection => AccountFormat::query()
                         ->where('firm_id', $get('firm_id'))
                         ->pluck('name', 'id'))
                     ->required(),
                 TextInput::make('nickname')
                     ->required(),
-                Select::make('status')
+                ToggleButtons::make('status')
                     ->options(AccountStatusEnum::class)
-                    ->required(),
-                MoneyInput::make('current_balance')
-                    ->disabled(),
-                MoneyInput::make('pnl')
-                    ->disabled(),
+                    ->inline()
+                    ->required()
+                    ->hiddenOn('create'),
+                Fieldset::make('Account format')
+                    ->relationship('account_format')
+                    ->hiddenOn('create')
+                    ->schema([
+                        MoneyInput::make('starting_balance')
+                            ->disabled(),
+                        MoneyInput::make('profit_goal')
+                            ->disabled(),
+                    ]),
             ]);
     }
 
@@ -71,6 +83,11 @@ class AccountResource extends Resource
                     ->badge(),
                 MoneyColumn::make('pnl'),
                 MoneyColumn::make('current_balance'),
+                MoneyColumn::make('account_format.profit_goal')
+                    ->label('Profit goal'),
+                TextColumn::make('profit_goal_progress')
+                    ->numeric(decimalPlaces: 2)
+                    ->suffix('%'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->toggleable(isToggledHiddenByDefault: true),
