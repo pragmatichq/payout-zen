@@ -33,7 +33,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getFundedPnlAttribute()
     {
         $accounts = $this->accounts()->active()->ofAccountFormatType(AccountFormatTypeEnum::Funded)->get();
-        dump($accounts);
 
         return $accounts->sum(function ($account) {
             return $account->pnl;
@@ -43,7 +42,6 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getEvaluationPnlAttribute()
     {
         $accounts = $this->accounts()->active()->ofAccountFormatType(AccountFormatTypeEnum::Evaluation)->get();
-        dump($accounts);
 
         return $accounts->sum(function ($account) {
             return $account->pnl;
