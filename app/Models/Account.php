@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountStatusEnum;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,67 +12,7 @@ class Account extends Model
 {
     protected $guarded = [];
 
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (Account $account) {
-            $account->current_balance = $account->account_format->starting_balance;
-        });
-
-        static::saving(function (Account $account) {
-            $user = $account->user;
-            $user->updateActivePnl();
-        });
-
-        static::deleted(function (Account $account) {
-            $user = $account->user;
-            $user->updateActivePnl();
-        });
-    }
-
-    public function updateStatistics(): void
-    {
-        $sessions = $this->trading_sessions()->get();
-        $pnl = $sessions->sum('pnl');
-        $starting_balance = $this->account_format->starting_balance;
-        $profit_goal = $this->account_format->profit_goal;
-        $starting_balance_in_dollars = ($starting_balance / 100);
-        $balance_over_time = $this->calculateBalanceOverTime($sessions, $starting_balance_in_dollars);
-
-        $this->balance_over_time = $balance_over_time;
-        $this->pnl = $pnl;
-        if ($profit_goal > 0) {
-            $this->profit_goal_progress = max($pnl / $profit_goal * 100, 0);
-        }
-        if ($this->status === AccountStatusEnum::Passed && $this->profit_goal_progress < 100) {
-            $this->status = AccountStatusEnum::Active;
-        } elseif ($this->profit_goal_progress >= 100) {
-            $this->status = AccountStatusEnum::Passed;
-        }
-        $this->current_balance = $pnl + $starting_balance;
-
-        $this->save();
-    }
-
-    private function calculateBalanceOverTime($sessions, $starting_balance_in_dollars): array
-    {
-        $cumulativeBalance = $starting_balance_in_dollars;
-        $dates = [];
-        $values = [];
-
-        foreach ($sessions as $session) {
-            $cumulativeBalance += ($session->pnl / 100);
-            $dates[] = $session->date->toDateString();
-            $values[] = $cumulativeBalance;
-        }
-
-        return [
-            'dates' => $dates,
-            'values' => $values,
-        ];
-    }
-
+    // Relationship Definitions
     public function firm(): BelongsTo
     {
         return $this->belongsTo(Firm::class);
@@ -92,11 +33,59 @@ class Account extends Model
         return $this->hasMany(TradingSession::class)->orderBy('date', 'desc');
     }
 
-    protected function casts(): array
+    // Attribute Accessors
+    public function getStartingBalanceAttribute()
     {
-        return [
-            'status' => AccountStatusEnum::class,
-            'balance_over_time' => 'array',
-        ];
+        return $this->account_format->starting_balance ?? 0;
     }
+
+    public function getPnlAttribute()
+    {
+        return $this->tradingSessions()->sum('pnl');
+    }
+
+    public function getCurrentBalanceAttribute()
+    {
+        return $this->starting_balance + $this->pnl;
+    }
+
+    public function getProfitGoalAttribute()
+    {
+        return $this->account_format->profit_goal ?? 0;
+    }
+
+    public function getProfitGoalProgressAttribute(): float|int
+    {
+        return $this->profit_goal > 0 ? ($this->pnl / $this->profit_goal * 100) : 0;
+    }
+
+    // Business Logic
+    public function updateAccountStatus(): void
+    {
+        if ($this->status == AccountStatusEnum::Active && $this->pnl >= $this->profit_goal) {
+            $this->status = AccountStatusEnum::Passed;
+        } elseif ($this->status == AccountStatusEnum::Passed && $this->pnl < $this->profit_goal) {
+            $this->status = AccountStatusEnum::Active;
+        }
+
+        $this->save();
+    }
+
+    // Scopes
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('status', AccountStatusEnum::Active);
+    }
+
+    public function scopeOfAccountFormatType(Builder $query, $type): Builder
+    {
+        return $query->whereHas('account_ormat', function (Builder $query) use ($type) {
+            $query->where('type', $type);
+        });
+    }
+
+    // Casting
+    protected $casts = [
+        'status' => AccountStatusEnum::class,
+    ];
 }

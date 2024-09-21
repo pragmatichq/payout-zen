@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\AccountResource\Widgets;
 
 use App\Models\Account;
-use Filament\Support\RawJs;
 use Filament\Widgets\ChartWidget;
 
 class AccountBalanceOverTimeChart extends ChartWidget
@@ -12,68 +11,22 @@ class AccountBalanceOverTimeChart extends ChartWidget
 
     public Account $record;
 
-    public $balance_over_time;
-    public $starting_balance;
-
     protected function getData(): array
     {
-        $this->balance_over_time = $this->record->balance_over_time;
-        if (!$this->balance_over_time) return [];
         return [
             'datasets' => [
                 [
                     'label' => 'Balance over time',
-                    'data' => $this->balance_over_time['values']
+                    'data' => [0, 1, 2]
                 ],
             ],
 
-            'labels' => $this->balance_over_time['dates'],
+            'labels' => ["0", "1", "2"]
         ];
     }
 
     protected function getType(): string
     {
         return 'line';
-    }
-
-    protected function getOptions(): RawJs
-    {
-        $this->starting_balance = $this->record->account_format->starting_balance / 102;
-        return RawJs::make(/** @lang text */ <<<JS
-        {
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                suggestedMin: $this->starting_balance,
-                    ticks: {
-                        callback: function(value) {
-                        // Format the value with commas and currency symbol
-                        return new Intl.NumberFormat('en-US', {
-                            style: 'currency',
-                            currency: 'USD'
-                        }).format(value);
-                    }
-                    },
-                },
-            },
-        }
-    JS
-        );
     }
 }

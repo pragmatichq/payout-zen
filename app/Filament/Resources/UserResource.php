@@ -12,7 +12,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Pelmered\FilamentMoneyField\Forms\Components\MoneyInput;
 use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 
 class UserResource extends Resource
@@ -36,8 +35,6 @@ class UserResource extends Resource
                 TextInput::make('password')
                     ->password()
                     ->required(),
-                MoneyInput::make('active_pnl')
-                    ->disabled(),
             ]);
     }
 
@@ -50,7 +47,8 @@ class UserResource extends Resource
                 TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable(),
-                MoneyColumn::make('active_pnl'),
+                MoneyColumn::make('funded_pnl'),
+                MoneyColumn::make('evaluation_pnl'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->toggleable(isToggledHiddenByDefault: true),

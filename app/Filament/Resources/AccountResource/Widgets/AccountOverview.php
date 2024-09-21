@@ -10,6 +10,7 @@ class AccountOverview extends BaseWidget
 {
 
     protected int|string|array $columnSpan = '1';
+    protected static ?string $pollingInterval = '1s';
 
     public ?Model $record = null;
 

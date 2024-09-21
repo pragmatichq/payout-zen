@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AccountFormatTypeEnum;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,18 +25,29 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    public function updateActivePnl(): void
-    {
-        $accounts = $this->accounts()->where('status', 'active')->get();
-        $active_pnl = $accounts->sum('pnl');
-        $this->active_pnl = $active_pnl;
-
-        $this->save();
-    }
-
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
+    }
+
+    public function getFundedPnlAttribute()
+    {
+        $accounts = $this->accounts()->active()->ofAccountFormatType(AccountFormatTypeEnum::Funded)->get();
+        dump($accounts);
+
+        return $accounts->sum(function ($account) {
+            return $account->pnl;
+        });
+    }
+
+    public function getEvaluationPnlAttribute()
+    {
+        $accounts = $this->accounts()->active()->ofAccountFormatType(AccountFormatTypeEnum::Evaluation)->get();
+        dump($accounts);
+
+        return $accounts->sum(function ($account) {
+            return $account->pnl;
+        });
     }
 
     protected function casts(): array
