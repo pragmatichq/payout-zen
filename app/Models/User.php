@@ -25,11 +25,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
+    // Relationship Definitions
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
     }
 
+    // Attribute Accessors
     public function getFundedPnlAttribute()
     {
         $accounts = $this->accounts()->active()->ofAccountFormatType(AccountFormatTypeEnum::Funded)->get();

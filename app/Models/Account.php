@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountStatusEnum;
+use App\Models\Traits\AccountAttributes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,9 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
+    use AccountAttributes;
+
     protected $guarded = [];
 
-    // Relationship Definitions
     public function firm(): BelongsTo
     {
         return $this->belongsTo(Firm::class);
@@ -28,46 +30,45 @@ class Account extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function trading_sessions(): HasMany
+    public function sessions(): HasMany
     {
-        return $this->hasMany(TradingSession::class)->orderBy('date', 'desc');
-    }
-
-    // Attribute Accessors
-    public function getStartingBalanceAttribute()
-    {
-        return $this->account_format->starting_balance ?? 0;
-    }
-
-    public function getPnlAttribute()
-    {
-        return $this->tradingSessions()->sum('pnl');
-    }
-
-    public function getCurrentBalanceAttribute()
-    {
-        return $this->starting_balance + $this->pnl;
-    }
-
-    public function getProfitGoalAttribute()
-    {
-        return $this->account_format->profit_goal ?? 0;
-    }
-
-    public function getProfitGoalProgressAttribute(): float|int
-    {
-        return $this->profit_goal > 0 ? ($this->pnl / $this->profit_goal * 100) : 0;
+        return $this->hasMany(TradingSession::class);
     }
 
     // Business Logic
     public function updateAccountStatus(): void
     {
-        if ($this->status == AccountStatusEnum::Active && $this->pnl >= $this->profit_goal) {
-            $this->status = AccountStatusEnum::Passed;
-        } elseif ($this->status == AccountStatusEnum::Passed && $this->pnl < $this->profit_goal) {
-            $this->status = AccountStatusEnum::Active;
+        if ($this->status != AccountStatusEnum::Reset) {
+            if ($this->drawdown_remaining <= 0) {
+                $this->status = AccountStatusEnum::Failed;
+            } elseif ($this->status == AccountStatusEnum::Active && $this->pnl >= $this->profit_goal) {
+                $this->status = AccountStatusEnum::Passed;
+            } elseif ($this->status == AccountStatusEnum::Passed && $this->pnl < $this->profit_goal) {
+                $this->status = AccountStatusEnum::Active;
+            } else {
+                $this->status = AccountStatusEnum::Active;
+            }
         }
 
+        $this->save();
+    }
+
+    public function recalculateHighwaterAmount(): void
+    {
+        $cumulativePnl = 0;
+        $highwater = 0;
+
+        $sessions = $this->sessions()->orderBy('date', 'asc')->get();
+
+        foreach ($sessions as $session) {
+            $cumulativePnl += $session->pnl;
+
+            if ($cumulativePnl > $highwater) {
+                $highwater = $cumulativePnl;
+            }
+        }
+
+        $this->highwater_amount = $highwater;
         $this->save();
     }
 
@@ -79,7 +80,7 @@ class Account extends Model
 
     public function scopeOfAccountFormatType(Builder $query, $type): Builder
     {
-        return $query->whereHas('account_ormat', function (Builder $query) use ($type) {
+        return $query->whereHas('account_format', function (Builder $query) use ($type) {
             $query->where('type', $type);
         });
     }

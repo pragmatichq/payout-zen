@@ -16,11 +16,13 @@ class TradingSession extends Model
         static::saved(function (TradingSession $session) {
             $account = $session->account;
             $account->updateAccountStatus();
+            $account->recalculateHighwaterAmount();
         });
 
         static::deleted(function (TradingSession $session) {
             $account = $session->account;
             $account->updateAccountStatus();
+            $account->recalculateHighwaterAmount();
         });
     }
 

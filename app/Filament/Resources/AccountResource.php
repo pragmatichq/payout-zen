@@ -83,6 +83,9 @@ class AccountResource extends Resource
                     ->badge(),
                 MoneyColumn::make('pnl'),
                 MoneyColumn::make('current_balance'),
+                MoneyColumn::make('maximum_loss_limit'),
+                MoneyColumn::make('drawdown_remaining'),
+                MoneyColumn::make('drawdown_threshold'),
                 MoneyColumn::make('account_format.profit_goal')
                     ->label('Profit goal'),
                 TextColumn::make('profit_goal_progress')

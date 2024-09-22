@@ -18,6 +18,7 @@ class AccountFormatFactory extends Factory
             'type' => $this->faker->randomElement(AccountFormatTypeEnum::cases())->value,
             'starting_balance' => $this->faker->randomElement([5000000, 10000000, 15000000]),
             'profit_goal' => $this->faker->randomElement([400000, 900000, 1200000]),
+            'drawdown_threshold' => $this->faker->randomElement([450000, 300000, 250000]),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ];

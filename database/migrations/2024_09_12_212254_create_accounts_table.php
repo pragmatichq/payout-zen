@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->foreignIdFor(AccountFormat::class)->constrained();
             $table->string('nickname');
             $table->enum('status', AccountStatusEnum::values())->default(AccountStatusEnum::Active);
+            $table->bigInteger('highwater_amount')->default(0);
             $table->timestamps();
         });
     }

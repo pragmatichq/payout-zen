@@ -13,7 +13,7 @@ use Pelmered\FilamentMoneyField\Tables\Columns\MoneyColumn;
 
 class TradingSessionsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'trading_sessions';
+    protected static string $relationship = 'sessions';
 
     public function form(Form $form): Form
     {
@@ -22,7 +22,7 @@ class TradingSessionsRelationManager extends RelationManager
                 DatePicker::make('date')
                     ->native(false)
                     ->unique(modifyRuleUsing: function (Unique $rule, $livewire) {
-                        return $rule->where('account_id', $livewire->ownerRecord->id); // Assuming account_id is in your form data
+                        return $rule->where('account_id', $livewire->ownerRecord->id)->ignore($livewire->ownerRecord->id, 'account_id');
                     })
                     ->closeOnDateSelection(),
                 MoneyInput::make('pnl')
